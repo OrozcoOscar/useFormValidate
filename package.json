@@ -1,0 +1,17 @@
+{
+  "name": "use-form-validate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo 'no test'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "prop-types": "15.8.1",
+    "react": "18.2.0"
+  }
+}
