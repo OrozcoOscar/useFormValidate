@@ -81,37 +81,37 @@ const useFormValidate = (customErrorMessages = {
    */
   const validate = (name, value, rules) => {
     if (rules?.required && !value) {
-      setError(name, customErrorMessages.is_required)
+      setError(name,rules.errorLabel || customErrorMessages.is_required)
       return false
     }
 
     if (rules?.money && !validateMoney(value)) {
-      setError(name, customErrorMessages.is_type_money)
+      setError(name,rules.errorLabel || customErrorMessages.is_type_money)
       return false
     }
 
     if (rules?.minLength && value.length < rules.minLength) {
-      setError(name, customErrorMessages.min_length.replace('{minLength}', rules.minLength))
+      setError(name,rules.errorLabel || customErrorMessages.min_length.replace('{minLength}', rules.minLength))
       return false
     }
 
     if (rules?.maxLength && value.length > rules.maxLength) {
-      setError(name, customErrorMessages.max_length.replace('{maxLength}', rules.maxLength))
+      setError(name,rules.errorLabel || customErrorMessages.max_length.replace('{maxLength}', rules.maxLength))
       return false
     }
 
     if (rules?.isEqual && value !== inputs[rules.isEqual]?.value) {
-      setError(name, customErrorMessages.fields_not_match)
+      setError(name,rules.errorLabel || customErrorMessages.fields_not_match)
       return false
     }
 
     if (rules?.email && !validateEmail(value)) {
-      setError(name, customErrorMessages.invalid_email)
+      setError(name,rules.errorLabel || customErrorMessages.invalid_email)
       return false
     }
 
     if (rules?.date && !isValidDate(value)) {
-      setError(name, customErrorMessages.invalid_date)
+      setError(name,rules.errorLabel || customErrorMessages.invalid_date)
       return false
     }
 
@@ -119,7 +119,7 @@ const useFormValidate = (customErrorMessages = {
       const validationResult = rules.validate(value, inputs)
       if (validationResult !== true) {
         if(typeof validationResult === 'boolean'){
-          setError(name, customErrorMessages.custom_validation)
+          setError(name,rules.errorLabel || customErrorMessages.custom_validation)
         }else{
           setError(name,validationResult)
         }
