@@ -14,7 +14,7 @@ npm install --save use-form-validate
 
 ```jsx
 import React from 'react';
-import useForm from 'use-form-validate';
+import {useFormValidate} from 'use-form-validate';
 
 const MyFormComponent = () => {
   const {
