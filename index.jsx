@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 
-const useFormValidate = (customErrorMessages = {
+export const useFormValidate = (customErrorMessages = {
   is_required: 'Campo obligatorio',
   is_type_money: 'Debe ser un valor numérico válido para dinero',
   min_length: 'El campo debe tener al menos {minLength} caracteres',
@@ -272,4 +272,3 @@ useFormValidate.propTypes = {
   })
 }
 
-export default useFormValidate
