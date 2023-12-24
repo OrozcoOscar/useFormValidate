@@ -1,14 +1,14 @@
 {
   "name": "use-form-validate",
   "version": "1.0.0",
-  "description": "",
+  "description": "Hook de React que proporciona funcionalidades para gestionar el estado y la validación de formularios de manera sencilla.",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo 'no test'"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["react", "formulario", "validación","useForm","useFormValidate"],
+  "author": "Oscar Orozco Pacheco",
   "license": "ISC",
   "dependencies": {
     "prop-types": "15.8.1",
