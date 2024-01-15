@@ -75,6 +75,10 @@ El `useFormValidate` hook proporciona varias funcionalidades para facilitar la g
 
 ### Reglas de Validación
 
+- **`errorBoolean:`** Si el input trabaja con `error` pero es de tipo booleano.
+  ```jsx
+  getFieldProps('fieldName', { errorBoolean: true })
+  ```
 - **`required:`** Campo obligatorio.
   ```jsx
   getFieldProps('fieldName', { required: true })
