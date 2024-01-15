@@ -218,10 +218,15 @@ const useFormValidate = (customErrorMessages = {
         [name]: { rules, value: '' }
       }))
     }
-
+    let others={}
+    if(inputs[name]){
+      others={
+        value: inputs[name]?.value || '',
+        error: inputs[name]?.rules?.errorBoolean?Boolean(errors[name]):getFieldError(name),
+      }
+    }
     return {
-      value: inputs[name]?.value || '',
-      error: inputs[name]?.rules?.errorBoolean?Boolean(errors[name]):getFieldError(name),
+      ...others,
       onBlur: () => {
         if (rules?.onBlur) {
           validate(name, inputs[name]?.value, rules);
