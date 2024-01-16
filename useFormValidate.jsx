@@ -202,7 +202,39 @@ const useFormValidate = (customErrorMessages = {
       onSubmit(formData)
     }
   }
+/**
+ * Formatea un valor de entrada en formato de teléfono.
+ *
+ * @param {string} value - Valor a formatear.
+ * @returns {string} - Valor formateado en formato de teléfono.
+ */
+const formatPhoneInput = (value = '') => {
+  // Elimina caracteres no numéricos
+  const numericValue = value.replace(/[^0-9,+]/g, '');
 
+  // Aplica el formato deseado (por ejemplo, '+0 123-456-7890' o '123-456-7890')
+  const match = numericValue.match(/^(\+\d{1,3}|)\s?(\d{3})(\d{3})(\d{4})$/);
+  if (match) {
+    // Si hay un código de país, incluirlo en el formato
+    const countryCode = match[1] ? `${match[1]} ` : '';
+    return `${countryCode}${match[2]}-${match[3]}-${match[4]}`;
+  }
+
+  // Devuelve el valor sin formato si no coincide con el patrón esperado
+  return numericValue;
+};
+
+
+/**
+ * Maneja el cambio de un campo de teléfono, formateando el valor.
+ *
+ * @param {string} name - Nombre del campo.
+ * @param {string} value - Nuevo valor del campo.
+ */
+const handlePhoneChange = (name, value) => {
+  const formattedValue = formatPhoneInput(value);
+  handleChange(name, formattedValue);
+};
   /**
    * Obtiene las propiedades del campo, incluido el valor, el estado de error y la función de cambio.
    *
@@ -233,7 +265,9 @@ const useFormValidate = (customErrorMessages = {
         }
       },
       onChange: (e, value) => {
-        return rules.money
+        return  rules.phone
+        ? handlePhoneChange(name, e?.target?.value|| (anotherValue ? value[anotherValue] : value))
+        : rules.money
           ? handleMoneyChange(name, e?.target?.value || (anotherValue ? value[anotherValue] : value))
           : handleChange(name, e?.target?.value || (anotherValue ? value[anotherValue] : value))
       }

@@ -99,6 +99,11 @@ El `useFormValidate` hook proporciona varias funcionalidades para facilitar la g
   getFieldProps('amount', { money: true })
   ```
 
+- **`phone:`** Valor debe ser un formato de numero válido.
+  ```jsx
+  getFieldProps('telephone', { phone: true })
+  ```
+
 - **`isEqual:`** Igualdad con otro campo.
   ```jsx
   getFieldProps('password', { isEqual: 'confirmPassword' })
@@ -113,7 +118,7 @@ El `useFormValidate` hook proporciona varias funcionalidades para facilitar la g
   ```jsx
   getFieldProps('eventDate', { date: true })
   ```
-  - **`onBlur:`** Ejecuta la validación cuando pierde el foco.
+- **`onBlur:`** Ejecuta la validación cuando pierde el foco.
   ```jsx
   getFieldProps('fieldName', { onBlur: true })
   ```
