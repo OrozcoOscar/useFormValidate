@@ -1,6 +1,77 @@
 import { useState } from 'react'
-import PropTypes from 'prop-types'
+/**
+ * @typedef {Object} Rule
+ * @property {boolean} [required] - Indica si el campo es obligatorio.
+ * @property {boolean} [money] - Indica si el campo representa un valor de dinero.
+ * @property {number} [minLength] - Longitud mínima permitida para el campo.
+ * @property {string} [isEqual] - Nombre del campo con el que se debe comparar para la igualdad.
+ * @property {boolean} [email] - Indica si el campo debe contener un correo electrónico válido.
+ * @property {boolean} [phone] - Indica si el campo debe contener un número de teléfono válido.
+ * @property {boolean} [date] - Indica si el campo debe contener una fecha válida.
+ * @property {(value: any, inputs: Object) => (boolean|string)} [validate] - Función personalizada de validación.
+ * @property {string} [errorLabel] - Etiqueta de error personalizada.
+ */
 
+/**
+ * @typedef {Object} Field
+ * @property {Rule} [rules] - Reglas de validación para el campo.
+ * @property {any} value - Valor actual del campo.
+ */
+
+/**
+ * @typedef {Object} Inputs
+ * @property {Object.<string, Field>} - Mapa de nombres de campo a objetos de campo.
+ */
+
+/**
+ * @typedef {Object} Errors
+ * @property {Object.<string, string>} - Mapa de nombres de campo a mensajes de error.
+ */
+
+/**
+ * @typedef {Object} UseFormValidateOptions
+ * @property {Object} [customErrorMessages] - Mensajes de error personalizados.
+ * @property {string} [customErrorMessages.is_required] - Mensaje para campo obligatorio.
+ * @property {string} [customErrorMessages.is_type_money] - Mensaje para valor de dinero no válido.
+ * @property {string} [customErrorMessages.min_length] - Mensaje para longitud mínima no cumplida.
+ * @property {string} [customErrorMessages.max_length] - Mensaje para longitud máxima excedida.
+ * @property {string} [customErrorMessages.fields_not_match] - Mensaje para campos no coincidentes.
+ * @property {string} [customErrorMessages.invalid_email] - Mensaje para correo electrónico no válido.
+ * @property {string} [customErrorMessages.invalid_phone] - Mensaje para número de teléfono no válido.
+ * @property {string} [customErrorMessages.invalid_date] - Mensaje para fecha no válida.
+ * @property {string} [customErrorMessages.custom_validation] - Mensaje para validación personalizada.
+ */
+
+/**
+ * @typedef {Object} FormattedValue
+ * @property {string} value - Valor formateado.
+ * @property {boolean} error - Estado de error.
+ * @property {() => void} onBlur - Manejador del evento onBlur.
+ * @property {(e: React.ChangeEvent<HTMLInputElement>, value?: any) => void} onChange - Manejador del evento onChange.
+ */
+
+/**
+ * Hook para validar formularios.
+ *
+ * @param {UseFormValidateOptions} [customErrorMessages] - Opciones para mensajes de error personalizados.
+ * @returns {{
+*   inputs: Inputs,
+*   updateInput: (name: string, value?: Field) => void,
+*   removeInput: (name: string) => void,
+*   handleChange: (name: string, value: any) => void,
+*   setError: (name: string, message: string) => void,
+*   clearError: (name: string) => void,
+*   validate: (name: string, value: any, rules?: Rule) => boolean,
+*   validateEmail: (email: string) => boolean,
+*   isValidDate: (dateString: string) => boolean,
+*   validateMoney: (value: string) => boolean,
+*   formatMoneyInput: (value?: string) => string,
+*   handleMoneyChange: (name: string, value: string) => void,
+*   handleSubmit: (onSubmit: (formData: any) => void) => (e: React.FormEvent) => void,
+*   getFieldProps: (name: string, rules?: Rule, anotherValue?: string) => FormattedValue,
+*   getFieldError: (name: string) => string
+* }}
+*/
 const useFormValidate = (customErrorMessages = {
   is_required: 'Campo obligatorio',
   is_type_money: 'Debe ser un valor numérico válido para dinero',
@@ -8,6 +79,7 @@ const useFormValidate = (customErrorMessages = {
   max_length: 'El campo no debe exceder los {maxLength} caracteres',
   fields_not_match: 'Los campos no coinciden',
   invalid_email: 'Ingrese un correo electrónico válido',
+  invalid_phone: 'Ingrese un numero telefónico válido',
   invalid_date: 'Ingrese una fecha válida',
   custom_validation: 'Error de validación personalizada'
 }) => {
@@ -80,8 +152,12 @@ const useFormValidate = (customErrorMessages = {
    * @returns {boolean} - `true` si la validación es exitosa, `false` en caso contrario.
    */
   const validate = (name, value, rules) => {
-    if (rules?.required && !value) {
-      setError(name,rules.errorLabel || customErrorMessages.is_required)
+    if (rules?.required && (!value || value.trim() === '')) {
+      setError(name, rules.errorLabel || customErrorMessages.is_required);
+      return false;
+    }
+    if(rules.phone && (value.length < 6 || value.length > 15)){
+      setError(name,rules.errorLabel || customErrorMessages.invalid_phone)
       return false
     }
 
@@ -297,18 +373,5 @@ const handlePhoneChange = (name, value) => {
   }
 }
 
-// PropTypes
-useFormValidate.propTypes = {
-  customErrorMessages: PropTypes.shape({
-    is_required: PropTypes.string,
-    is_type_money: PropTypes.string,
-    min_length: PropTypes.string,
-    max_length: PropTypes.string,
-    fields_not_match: PropTypes.string,
-    invalid_email: PropTypes.string,
-    invalid_date: PropTypes.string,
-    custom_validation: PropTypes.string
-  })
-}
 
 export default useFormValidate
