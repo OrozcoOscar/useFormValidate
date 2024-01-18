@@ -276,6 +276,9 @@ const useFormValidate = (customErrorMessages = {
    */
   const handleSubmit = (onSubmit) => (e) => {
     e.preventDefault()
+    if(!onSubmit || typeof onSubmit !== "function"){
+      throw new Error("La funcion handleSubmit espera como parametro una funcion.")
+    }
     const formData = {}
     const isValid = Object.keys(inputs).every((name) => {
       const { rules, value } = inputs[name] || {}
@@ -332,12 +335,13 @@ const handlePhoneChange = (name, value) => {
     if (!(name in inputs) || JSON.stringify(inputs[name]?.rules) !== JSON.stringify(rules)) {
       setInputs((prevInputs) => ({
         ...prevInputs,
-        [name]: { rules, value: '' }
+        [name]: { rules, value: rules?.value || '' }
       }))
     }
     let others={}
     if(inputs[name]){
       others={
+        ...([rules?.helperText]?{[rules?.helperText]:getFieldError(name)}:{}),
         value: inputs[name]?.value || '',
         error: inputs[name]?.rules?.errorBoolean?Boolean(errors[name]):getFieldError(name),
       }

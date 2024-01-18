@@ -71,19 +71,28 @@ export default MyFormComponent;
 - **`getFieldProps(name, rules, anotherValue):`** Proporciona props para un campo específico, incluido el valor, el manejo de cambios y el estado de error.
 - **`resetForm():`** Permite reiniciar el formulario.
 
-## Funcionalidades y Reglas de Validación
+## Reglas de Validación
 
 El `useFormValidate` hook proporciona varias funcionalidades para facilitar la gestión de formularios, junto con reglas de validación personalizadas. Aquí hay un resumen de las reglas de validación disponibles:
 
-### Reglas de Validación
 
 - **`errorBoolean:`** Si el input trabaja con `error` pero es de tipo booleano.
   ```jsx
   getFieldProps('fieldName', { errorBoolean: true })
   ```
+
 - **`required:`** Campo obligatorio.
   ```jsx
   getFieldProps('fieldName', { required: true })
+  ```
+
+- **`helperText:`** Permite establecer cual es la propiedad que muestra el mensaje de error (Es mas util cuando se usa alguna librería como MUI o se crean componentes que reciben el mensaje de error por props).
+  ```jsx
+  getFieldProps('fieldName', { helperText: 'helperText' })
+  ```
+- **`value:`** Permite establecer un valor por defecto.
+  ```jsx
+  getFieldProps('fieldName', { value: 'valor inicial' })
   ```
 
 - **`minLength:`** Mínimo número de caracteres permitidos.
@@ -138,17 +147,10 @@ El `useFormValidate` hook proporciona varias funcionalidades para facilitar la g
   getFieldProps('fieldName', { required:true, errorLabel: "Verifica el campo antes de continuar" })
   ```
 
-### Ejemplo Completo
+### Ejemplo de uso de getFieldProps y getFieldError
 
 ```jsx
 const {
-  inputs,
-  handleChange,
-  errors,
-  setError,
-  clearError,
-  validate,
-  handleSubmit,
   getFieldProps,
   getFieldError,
 } = useFormValidate();
