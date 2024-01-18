@@ -27,6 +27,7 @@ const MyFormComponent = () => {
     handleSubmit,
     getFieldProps,
     getFieldError,
+    resetForm
   } = useFormValidate();
 
   const onSubmit = (formData) => {
@@ -68,6 +69,7 @@ export default MyFormComponent;
 - **`validate(name, value, rules):`** Realiza la validación de un campo según reglas específicas.
 - **`handleSubmit(onSubmit):`** Maneja la lógica de envío del formulario, ejecuta la validación y llama a la función `onSubmit` si el formulario es válido.
 - **`getFieldProps(name, rules, anotherValue):`** Proporciona props para un campo específico, incluido el valor, el manejo de cambios y el estado de error.
+- **`resetForm():`** Permite reiniciar el formulario.
 
 ## Funcionalidades y Reglas de Validación
 

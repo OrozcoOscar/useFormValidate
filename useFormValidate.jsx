@@ -70,6 +70,7 @@ import { useState } from 'react'
 *   handleSubmit: (onSubmit: (formData: any) => void) => (e: React.FormEvent) => void,
 *   getFieldProps: (name: string, rules?: Rule, anotherValue?: string) => FormattedValue,
 *   getFieldError: (name: string) => string
+*   resetForm: () => void
 * }}
 */
 const useFormValidate = (customErrorMessages = {
@@ -143,6 +144,14 @@ const useFormValidate = (customErrorMessages = {
     setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }))
   }
 
+  /**
+   * Reinicia un formulario.
+   *
+   */
+  const resetForm = () => {
+    setInputs({});
+    setErrors({});
+  };
   /**
    * Valida un campo según las reglas especificadas.
    *
@@ -369,7 +378,8 @@ const handlePhoneChange = (name, value) => {
     validate,
     handleSubmit,
     getFieldProps,
-    getFieldError
+    getFieldError,
+    resetForm
   }
 }
 

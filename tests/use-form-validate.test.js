@@ -52,5 +52,33 @@ describe('useFormValidate', () => {
       // Assert error message for invalid phone number format
       expect(result.current.getFieldError('phoneNumber')).toBe('Ingrese un numero telefónico válido');
     });
-  // Add more test cases for other rules (max length, email, phone, etc.)
+    
+    test('resetForm should reset inputs and errors', () => {
+      // Arrange
+      const { result } = renderHook(() => useFormValidate());
+  
+      // Act: Realiza algunas interacciones, como llenar campos y establecer errores
+      act(() => {
+        result.current.updateInput('field1', { value: 'someValue', rules: {} });
+        result.current.setError('field2', 'Some error message');
+      });
+  
+      // Assert: Verifica que los inputs y errores se hayan configurado correctamente antes de resetear
+      expect(result.current.inputs).toEqual({
+        field1: { value: 'someValue', rules: {} },
+      });
+      expect(result.current.errors).toEqual({
+        field2: 'Some error message',
+      });
+  
+      // Act: Resetea el formulario
+      act(() => {
+        result.current.resetForm();
+      });
+  
+      // Assert: Verifica que los inputs y errores se hayan restablecido después del reset
+      expect(result.current.inputs).toEqual({});
+      expect(result.current.errors).toEqual({});
+    });
+  
 });
