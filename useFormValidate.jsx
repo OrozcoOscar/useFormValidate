@@ -1,17 +1,17 @@
 import { useState } from 'react'
 /**
  * @typedef {Object} Rule
- * @property {boolean} [required] - Indica si el campo es obligatorio.
- * @property {boolean} [money] - Indica si el campo representa un valor de dinero.
- * @property {number} [minLength] - Longitud mínima permitida para el campo.
- * @property {string} [isEqual] - Nombre del campo con el que se debe comparar para la igualdad.
- * @property {boolean} [email] - Indica si el campo debe contener un correo electrónico válido.
- * @property {boolean} [phone] - Indica si el campo debe contener un número de teléfono válido.
- * @property {boolean} [date] - Indica si el campo debe contener una fecha válida.
- * @property {(value: any, inputs: Object) => (boolean|string)} [validate] - Función personalizada de validación.
- * @property {string} [errorLabel] - Etiqueta de error personalizada.
+ * @property {boolean} [required] - Indicates if the field is required.
+ * @property {boolean} [money] - Indicates if the field represents a money value.
+ * @property {number} [minLength] - Minimum allowed length for the field.
+ * @property {string} [isEqual] - Name of the field to compare for equality.
+ * @property {boolean} [email] - Indicates if the field must contain a valid email.
+ * @property {boolean} [phone] - Indicates if the field must contain a valid phone number.
+ * @property {boolean} [date] - Indicates if the field must contain a valid date.
+ * @property {(value: any, inputs: Object) => (boolean|string)} [validate] - Custom validation function.
+ * @property {string} [errorLabel] - Custom error label.
+ * @property {boolean} [url] - Indicates if the field must contain a valid URL.
  */
-
 /**
  * @typedef {Object} Field
  * @property {Rule} [rules] - Reglas de validación para el campo.
@@ -82,6 +82,7 @@ const useFormValidate = (customErrorMessages = {
   invalid_email: 'Ingrese un correo electrónico válido',
   invalid_phone: 'Ingrese un numero telefónico válido',
   invalid_date: 'Ingrese una fecha válida',
+  invalid_url: 'Ingrese una url válida',
   custom_validation: 'Error de validación personalizada'
 }) => {
   const [inputs, setInputs] = useState({})
@@ -104,12 +105,12 @@ const useFormValidate = (customErrorMessages = {
    * Actualiza un campo en el estado de inputs.
    *
    * @param {string} name - Nombre del campo.
-   * @param {object} value - Nuevo valor del campo.
+   * @param {string} value - Nuevo valor del campo.
    */
-  const updateInput = (name, value = {}) => {
+  const updateInput = (name, value = "") => {
     setInputs((prevInputs) => ({
       ...prevInputs,
-      [name]: value
+      [name]: { ...prevInputs[name], value }
     }))
   }
 
@@ -161,11 +162,18 @@ const useFormValidate = (customErrorMessages = {
    * @returns {boolean} - `true` si la validación es exitosa, `false` en caso contrario.
    */
   const validate = (name, value, rules) => {
+    if(typeof value !== 'string'){
+      throw new Error("El campo value debe ser un string")
+    }
     if (rules?.required && (!value || value.trim() === '')) {
       setError(name, rules.errorLabel || customErrorMessages.is_required);
       return false;
     }
-    if(rules.phone && (value.length < 6 || value.length > 15)){
+    if (rules?.url && !isValidUrl(value)) {
+      setError(name, rules.errorLabel || customErrorMessages.invalid_url);
+      return false;
+    }
+    if(rules?.phone && (value.length < 6 || value.length > 15)){
       setError(name,rules.errorLabel || customErrorMessages.invalid_phone)
       return false
     }
@@ -216,6 +224,17 @@ const useFormValidate = (customErrorMessages = {
     clearError(name)
     return true
   }
+/**
+ * Valida si una url es valida.
+ *
+ * @param {string} url - The URL to validate.
+ * @returns {boolean} - `true` if the URL is valid, `false` otherwise.
+ */
+const isValidUrl = (url) => {
+  // Regular expression for a simple URL validation
+  const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+  return urlRegex.test(url);
+};
 
   /**
    * Valida si un correo electrónico es válido.
@@ -347,6 +366,7 @@ const handlePhoneChange = (name, value) => {
       }
     }
     return {
+      name:name,
       ...others,
       onBlur: () => {
         if (rules?.onBlur) {
@@ -354,7 +374,7 @@ const handlePhoneChange = (name, value) => {
         }
       },
       onChange: (e, value) => {
-        return  rules.phone
+        return  rules?.phone
         ? handlePhoneChange(name, e?.target?.value|| (anotherValue ? value[anotherValue] : value))
         : rules.money
           ? handleMoneyChange(name, e?.target?.value || (anotherValue ? value[anotherValue] : value))
