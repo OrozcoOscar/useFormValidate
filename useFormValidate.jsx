@@ -301,8 +301,8 @@ const isValidUrl = (url) => {
     const formData = {}
     const isValid = Object.keys(inputs).every((name) => {
       const { rules, value } = inputs[name] || {}
-      formData[name] = value
-      return validate(name, value, rules)
+      formData[name] = value || ''
+      return validate(name, formData[name], rules)
     })
 
     if (isValid) {
@@ -371,7 +371,7 @@ const handlePhoneChange = (name, value) => {
       ...others,
       onBlur: () => {
         if (rules?.onBlur) {
-          validate(name, inputs[name]?.value, rules);
+          validate(name, inputs[name]?.value||"", rules);
         }
       },
       onChange: (e, value) => {
