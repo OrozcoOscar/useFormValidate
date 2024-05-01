@@ -348,13 +348,14 @@ const handlePhoneChange = (name, value) => {
    * @param {string} name - Nombre del campo.
    * @param {object} rules - Reglas del campo.
    * @param {string} anotherValue - Valor alternativo para el campo.
+   * @param {string} defaultValue - Valor por defecto para el campo.
    * @returns {object} - Propiedades del campo.
    */
-  const getFieldProps = (name, rules = {}, anotherValue) => {
+  const getFieldProps = (name, rules = {}, anotherValue,defaultValue) => {
     if (!(name in inputs) || JSON.stringify(inputs[name]?.rules) !== JSON.stringify(rules)) {
       setInputs((prevInputs) => ({
         ...prevInputs,
-        [name]: { rules, value: rules?.value || '' }
+        [name]: { rules, value: rules?.value ||defaultValue|| '' }
       }))
     }
     let others={}
