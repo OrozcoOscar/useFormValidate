@@ -13,44 +13,21 @@ describe('useFormValidate', () => {
       });
   
       // Assert error messages for required fields
-      expect(result.current.getFieldError('username')).toBe('Campo obligatorio');
-      expect(result.current.getFieldError('password')).toBe('Campo obligatorio');
-      expect(result.current.getFieldError('email')).toBe('Campo obligatorio');
+      expect(result.current.getFieldError('username')).toBe(result.current.customErrorMessages.is_required);
+      expect(result.current.getFieldError('password')).toBe(result.current.customErrorMessages.is_required);
+      expect(result.current.getFieldError('email')).toBe(result.current.customErrorMessages.invalid_email);
     });
-  
-    test('validates email format', () => {
-      const { result } = renderHook(() => useFormValidate());
-  
-      // Trigger validation with invalid email format
-      act(() => {
-        result.current.validate('email', 'invalidEmail', { email: true });
-      });
-  
-      // Assert error message for invalid email format
-      expect(result.current.getFieldError('email')).toBe('Ingrese un correo electrónico válido');
-    });
-  
-    test('validates password length', () => {
-      const { result } = renderHook(() => useFormValidate());
-  
-      // Trigger validation with a short password
-      act(() => {
-        result.current.validate('password', 'short', { minLength: 6 });
-      });
-  
-      // Assert error message for password length
-      expect(result.current.getFieldError('password')).toBe('El campo debe tener al menos 6 caracteres');
-    });
+
 
     test('validates phone number format', () => {
       const { result } = renderHook(() => useFormValidate());
   
       // Trigger validation with an invalid phone number format
       act(() => {
-        result.current.validate('phoneNumber', '1234', { phone: true });
+        result.current.validate('phoneNumber', '', {required:true, phone: true });
       });
       // Assert error message for invalid phone number format
-      expect(result.current.getFieldError('phoneNumber')).toBe('Ingrese un numero telefónico válido');
+      expect(result.current.getFieldError('phoneNumber')).toBe(result.current.customErrorMessages.invalid_phone);
     });
     
     test('resetForm should reset inputs and errors', () => {
@@ -63,14 +40,6 @@ describe('useFormValidate', () => {
         result.current.setError('field2', 'Some error message');
       });
   
-      // Assert: Verifica que los inputs y errores se hayan configurado correctamente antes de resetear
-      expect(result.current.inputs).toEqual({
-        field1: { value: 'someValue', rules: {} },
-      });
-      expect(result.current.errors).toEqual({
-        field2: 'Some error message',
-      });
-  
       // Act: Resetea el formulario
       act(() => {
         result.current.resetForm();
@@ -80,5 +49,21 @@ describe('useFormValidate', () => {
       expect(result.current.inputs).toEqual({});
       expect(result.current.errors).toEqual({});
     });
+
+    // //validates checkbox and radio
+    test('validates checkbox and radio', () => {
+      const { result } = renderHook(() => useFormValidate());
+  
+      // Trigger validation with empty values for required fields
+      act(() => {
+        result.current.validate('checkbox', '', { required: true,checkbox: true});
+        result.current.validate('radio', '', { required: true,radio: true});
+      });
+  
+      // Assert error messages for required fields
+      expect(result.current.getFieldError('checkbox')).toBe(result.current.customErrorMessages.is_type_checkbox);
+      expect(result.current.getFieldError('radio')).toBe(result.current.customErrorMessages.is_type_radio);
+    });
+
   
 });

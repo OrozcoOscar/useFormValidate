@@ -129,6 +129,18 @@ El `useFormValidate` hook proporciona varias funcionalidades para facilitar la g
   ```jsx
   getFieldProps('eventDate', { date: true })
   ```
+- **`checkbox:`** Para inputs de tipo checkbox.
+  ```jsx
+  getFieldProps('check_input', { checkbox: true })
+  ```
+- **`radio:`** Para inputs de tipo radio.
+  ```jsx
+  getFieldProps('radio_input', { radio: true })
+  ```
+- **`file:`** Para inputs de tipo file.
+  ```jsx
+  getFieldProps('file_input', { file: true })
+  ```
 - **`onBlur:`** Ejecuta la validación cuando pierde el foco.
   ```jsx
   getFieldProps('fieldName', { onBlur: true })
@@ -173,13 +185,18 @@ Puedes personalizar los mensajes de error pasando un objeto al hook. Los mensaje
 
 ```jsx
 const customErrorMessages = {
-  is_required: 'Este campo es obligatorio',
-  is_type_money: 'Por favor, ingrese un valor numérico válido para dinero',
+  is_type_file: 'Debe seleccionar un archivo',
+  is_type_checkbox: 'Debe seleccionar al menos una opción',
+  is_type_radio: 'Debe seleccionar una opción',
+  is_required: 'Campo obligatorio',
+  is_type_money: 'Debe ser un valor numérico válido para dinero',
   min_length: 'El campo debe tener al menos {minLength} caracteres',
   max_length: 'El campo no debe exceder los {maxLength} caracteres',
   fields_not_match: 'Los campos no coinciden',
-  invalid_email: 'Ingrese un correo electrónico válido, por favor',
-  invalid_date: 'Ingrese una fecha válida, por favor',
+  invalid_email: 'Ingrese un correo electrónico válido',
+  invalid_phone: 'Ingrese un numero telefónico válido',
+  invalid_date: 'Ingrese una fecha válida',
+  invalid_url: 'Ingrese una url válida',
   custom_validation: 'Error de validación personalizada: {customMessage}',
 };
 

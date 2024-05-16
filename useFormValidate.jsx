@@ -11,7 +11,11 @@ import { useState } from 'react'
  * @property {(value: any, inputs: Object) => (boolean|string)} [validate] - Custom validation function.
  * @property {string} [errorLabel] - Custom error label.
  * @property {boolean} [url] - Indicates if the field must contain a valid URL.
+ * @property {boolean} [checkbox] - Indicates if the field must be a checkbox.
+ * @property {boolean} [radio] - Indicates if the field must be a radio.
+ * @property {boolean} [file] - Indicates if the field must be a file.
  */
+
 /**
  * @typedef {Object} Field
  * @property {Rule} [rules] - Reglas de validación para el campo.
@@ -74,6 +78,9 @@ import { useState } from 'react'
 * }}
 */
 const useFormValidate = (customErrorMessages = {
+  is_type_file: 'Debe seleccionar un archivo',
+  is_type_checkbox: 'Debe seleccionar al menos una opción',
+  is_type_radio: 'Debe seleccionar una opción',
   is_required: 'Campo obligatorio',
   is_type_money: 'Debe ser un valor numérico válido para dinero',
   min_length: 'El campo debe tener al menos {minLength} caracteres',
@@ -87,17 +94,19 @@ const useFormValidate = (customErrorMessages = {
 }) => {
   const [inputs, setInputs] = useState({})
   const [errors, setErrors] = useState({})
+  console.log(errors)
 
   /**
    * Maneja el cambio de un campo en el estado de inputs.
    *
    * @param {string} name - Nombre del campo.
    * @param {any} value - Nuevo valor del campo.
+   * @param {object} others - Otros valores a actualizar en el campo.
    */
-  const handleChange = (name, value) => {
+  const handleChange = (name, value,others={}) => {
     setInputs((prevInputs) => ({
       ...prevInputs,
-      [name]: { ...prevInputs[name], value }
+      [name]: { ...prevInputs[name], value,...others }
     }))
   }
 
@@ -162,79 +171,94 @@ const useFormValidate = (customErrorMessages = {
    * @returns {boolean} - `true` si la validación es exitosa, `false` en caso contrario.
    */
   const validate = (name, value, rules) => {
-    if(typeof value !== 'string'){
+    if (typeof value !== 'string') {
       throw new Error("El campo value debe ser un string")
     }
+    if (rules?.required && rules?.url && !isValidUrl(value)) {
+      setError(name, rules.errorLabel || customErrorMessages.invalid_url);
+      return false;
+    }
+    if (rules?.required && rules?.phone && (value.length < 6 || value.length > 15)) {
+      setError(name, rules.errorLabel || customErrorMessages.invalid_phone)
+      return false
+    }
+
+    if (rules?.required && rules?.money && !validateMoney(value)) {
+      setError(name, rules.errorLabel || customErrorMessages.is_type_money)
+      return false
+    }
+
+    if (rules?.required && rules?.minLength && value.length < rules.minLength) {
+      setError(name, rules.errorLabel || customErrorMessages.min_length.replace('{minLength}', rules.minLength))
+      return false
+    }
+
+    if (rules?.required && rules?.maxLength && value.length > rules.maxLength) {
+      setError(name, rules.errorLabel || customErrorMessages.max_length.replace('{maxLength}', rules.maxLength))
+      return false
+    }
+
+    if (rules?.required && rules?.isEqual && value !== inputs[rules.isEqual]?.value) {
+      setError(name, rules.errorLabel || customErrorMessages.fields_not_match)
+      return false
+    }
+
+    if (rules?.required && rules?.email && !validateEmail(value)) {
+      setError(name, rules.errorLabel || customErrorMessages.invalid_email)
+      return false
+    }
+
+    if (rules?.required && rules?.date && !isValidDate(value)) {
+      setError(name, rules.errorLabel || customErrorMessages.invalid_date)
+      return false
+    }
+
+    if (rules?.required && rules?.validate && typeof rules?.validate === 'function') {
+      const validationResult = rules.validate(value, inputs)
+      if (validationResult !== true) {
+        if (typeof validationResult === 'boolean') {
+          setError(name, rules.errorLabel || customErrorMessages.custom_validation)
+        } else {
+          setError(name, validationResult)
+        }
+
+        return false
+      }
+    }
+    if (rules?.required && rules?.checkbox && !value) {
+      setError(name, rules.errorLabel || customErrorMessages.is_type_checkbox)
+      return false
+    }
+    if (rules?.required && rules?.radio && !value) {
+      setError(name, rules.errorLabel || customErrorMessages.is_type_radio)
+      return false
+    }
+    if (rules?.required && rules?.file && value === "") {
+      setError(name, rules.errorLabel || customErrorMessages.is_type_file)
+      return false
+    }
+
     if (rules?.required && (!value || value.trim() === '')) {
       setError(name, rules.errorLabel || customErrorMessages.is_required);
       return false;
     }
-    if (rules?.url && !isValidUrl(value)) {
-      setError(name, rules.errorLabel || customErrorMessages.invalid_url);
-      return false;
-    }
-    if(rules?.phone && (value.length < 6 || value.length > 15)){
-      setError(name,rules.errorLabel || customErrorMessages.invalid_phone)
-      return false
-    }
+    
 
-    if (rules?.money && !validateMoney(value)) {
-      setError(name,rules.errorLabel || customErrorMessages.is_type_money)
-      return false
-    }
-
-    if (rules?.minLength && value.length < rules.minLength) {
-      setError(name,rules.errorLabel || customErrorMessages.min_length.replace('{minLength}', rules.minLength))
-      return false
-    }
-
-    if (rules?.maxLength && value.length > rules.maxLength) {
-      setError(name,rules.errorLabel || customErrorMessages.max_length.replace('{maxLength}', rules.maxLength))
-      return false
-    }
-
-    if (rules?.isEqual && value !== inputs[rules.isEqual]?.value) {
-      setError(name,rules.errorLabel || customErrorMessages.fields_not_match)
-      return false
-    }
-
-    if (rules?.email && !validateEmail(value)) {
-      setError(name,rules.errorLabel || customErrorMessages.invalid_email)
-      return false
-    }
-
-    if (rules?.date && !isValidDate(value)) {
-      setError(name,rules.errorLabel || customErrorMessages.invalid_date)
-      return false
-    }
-
-    if (rules?.validate && typeof rules?.validate === 'function') {
-      const validationResult = rules.validate(value, inputs)
-      if (validationResult !== true) {
-        if(typeof validationResult === 'boolean'){
-          setError(name,rules.errorLabel || customErrorMessages.custom_validation)
-        }else{
-          setError(name,validationResult)
-        }
-        
-        return false
-      }
-    }
 
     clearError(name)
     return true
   }
-/**
- * Valida si una url es valida.
- *
- * @param {string} url - The URL to validate.
- * @returns {boolean} - `true` if the URL is valid, `false` otherwise.
- */
-const isValidUrl = (url) => {
-  // Regular expression for a simple URL validation
-  const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-  return urlRegex.test(url);
-};
+  /**
+   * Valida si una url es valida.
+   *
+   * @param {string} url - The URL to validate.
+   * @returns {boolean} - `true` if the URL is valid, `false` otherwise.
+   */
+  const isValidUrl = (url) => {
+    // Regular expression for a simple URL validation
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+    return urlRegex.test(url);
+  };
 
   /**
    * Valida si un correo electrónico es válido.
@@ -295,7 +319,7 @@ const isValidUrl = (url) => {
    */
   const handleSubmit = (onSubmit) => (e) => {
     e.preventDefault()
-    if(!onSubmit || typeof onSubmit !== "function"){
+    if (!onSubmit || typeof onSubmit !== "function") {
       throw new Error("La funcion handleSubmit espera como parametro una funcion.")
     }
     const formData = {}
@@ -309,39 +333,91 @@ const isValidUrl = (url) => {
       onSubmit(formData)
     }
   }
-/**
- * Formatea un valor de entrada en formato de teléfono.
- *
- * @param {string} value - Valor a formatear.
- * @returns {string} - Valor formateado en formato de teléfono.
- */
-const formatPhoneInput = (value = '') => {
-  // Elimina caracteres no numéricos
-  const numericValue = value.replace(/[^0-9,+]/g, '');
+  /**
+   * Formatea un valor de entrada en formato de teléfono.
+   *
+   * @param {string} value - Valor a formatear.
+   * @returns {string} - Valor formateado en formato de teléfono.
+   */
+  const formatPhoneInput = (value = '') => {
+    // Elimina caracteres no numéricos
+    const numericValue = value.replace(/[^0-9,+]/g, '');
 
-  // Aplica el formato deseado (por ejemplo, '+0 123-456-7890' o '123-456-7890')
-  const match = numericValue.match(/^(\+\d{1,3}|)\s?(\d{3})(\d{3})(\d{4})$/);
-  if (match) {
-    // Si hay un código de país, incluirlo en el formato
-    const countryCode = match[1] ? `${match[1]} ` : '';
-    return `${countryCode}${match[2]}-${match[3]}-${match[4]}`;
+    // Aplica el formato deseado (por ejemplo, '+0 123-456-7890' o '123-456-7890')
+    const match = numericValue.match(/^(\+\d{1,3}|)\s?(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      // Si hay un código de país, incluirlo en el formato
+      const countryCode = match[1] ? `${match[1]} ` : '';
+      return `${countryCode}${match[2]}-${match[3]}-${match[4]}`;
+    }
+
+    // Devuelve el valor sin formato si no coincide con el patrón esperado
+    return numericValue;
+  };
+
+
+  /**
+   * Maneja el cambio de un campo de teléfono, formateando el valor.
+   *
+   * @param {string} name - Nombre del campo.
+   * @param {string} value - Nuevo valor del campo.
+   */
+  const handlePhoneChange = (name, value) => {
+    const formattedValue = formatPhoneInput(value);
+    handleChange(name, formattedValue);
+  };
+
+  /**
+  * Permite gestionar el cambio de un campo 
+  * @param {string} name - Nombre del campo.
+  * @param {object} e - Evento de cambio.
+  * @param {any} value - Valor del campo.
+  * @param {object} rules - Reglas del campo.
+  */
+  const onChange = (name, e, value, anotherValue, rules) => {
+
+    const newValue = e?.target?.value || (anotherValue ? value[anotherValue] : value)
+
+    if (rules?.file) {
+      const files = e?.target?.files;
+      if (files && files.length > 0) {
+        const filePromises = Array.from(files).map((file) => {
+          return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve({ dataURL: reader.result, fileName: file.name });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+          });
+        });
+
+        Promise.all(filePromises)
+          .then((fileData) => {
+        handleChange(name,"", { values: fileData });
+          })
+          .catch((error) => {
+        console.error('Error reading file:', error);
+          });
+      } else {
+        handleChange(name,"", { values: [] });
+      }
+    }
+    else if (rules?.checkbox) {
+      handleChange(name, e?.target?.checked);
+    } else if (rules?.radio) {
+      handleChange(name, e?.target?.value);
+    } else {
+      if (rules?.phone) {
+        handlePhoneChange(name, newValue);
+      } else if (rules?.money) {
+        handleMoneyChange(name, newValue);
+      } else {
+        handleChange(name, newValue);
+      }
+    }
+
   }
-
-  // Devuelve el valor sin formato si no coincide con el patrón esperado
-  return numericValue;
-};
-
-
-/**
- * Maneja el cambio de un campo de teléfono, formateando el valor.
- *
- * @param {string} name - Nombre del campo.
- * @param {string} value - Nuevo valor del campo.
- */
-const handlePhoneChange = (name, value) => {
-  const formattedValue = formatPhoneInput(value);
-  handleChange(name, formattedValue);
-};
   /**
    * Obtiene las propiedades del campo, incluido el valor, el estado de error y la función de cambio.
    *
@@ -351,35 +427,32 @@ const handlePhoneChange = (name, value) => {
    * @param {string} defaultValue - Valor por defecto para el campo.
    * @returns {object} - Propiedades del campo.
    */
-  const getFieldProps = (name, rules = {}, anotherValue,defaultValue) => {
+  const getFieldProps = (name, rules = {}, anotherValue, defaultValue) => {
     if (!(name in inputs) || JSON.stringify(inputs[name]?.rules) !== JSON.stringify(rules)) {
       setInputs((prevInputs) => ({
         ...prevInputs,
-        [name]: { rules, value: rules?.value ||defaultValue|| '' }
+        [name]: { rules, value: rules?.value || defaultValue || '' }
       }))
     }
-    let others={}
-    if(inputs[name]){
-      others={
-        ...([rules?.helperText]?{[rules?.helperText]:getFieldError(name)}:{}),
+    let others = {}
+    if (inputs[name]) {
+      others = {
+        ...([rules?.helperText] ? { [rules?.helperText]: getFieldError(name) } : {}),
         value: inputs[name]?.value || '',
-        error: inputs[name]?.rules?.errorBoolean?Boolean(errors[name]):getFieldError(name),
+        ...(rules?.file? {value: undefined} : {}),
+        error: inputs[name]?.rules?.errorBoolean ? Boolean(errors[name]) : getFieldError(name),
       }
     }
     return {
-      name:name,
+      name: name,
       ...others,
       onBlur: () => {
         if (rules?.onBlur) {
-          validate(name, inputs[name]?.value||"", rules);
+          validate(name, inputs[name]?.value || "", rules);
         }
       },
       onChange: (e, value) => {
-        return  rules?.phone
-        ? handlePhoneChange(name, e?.target?.value|| (anotherValue ? value[anotherValue] : value))
-        : rules.money
-          ? handleMoneyChange(name, e?.target?.value || (anotherValue ? value[anotherValue] : value))
-          : handleChange(name, e?.target?.value || (anotherValue ? value[anotherValue] : value))
+        return onChange(name, e, value, anotherValue, rules)
       }
     }
   }
@@ -404,7 +477,8 @@ const handlePhoneChange = (name, value) => {
     handleSubmit,
     getFieldProps,
     getFieldError,
-    resetForm
+    resetForm,
+    customErrorMessages
   }
 }
 
