@@ -94,7 +94,7 @@ const useFormValidate = (customErrorMessages = {
 }) => {
   const [inputs, setInputs] = useState({})
   const [errors, setErrors] = useState({})
-  console.log(errors)
+
 
   /**
    * Maneja el cambio de un campo en el estado de inputs.
