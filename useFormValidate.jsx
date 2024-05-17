@@ -404,9 +404,9 @@ const useFormValidate = (customErrorMessages = {
       }
     }
     else if (rules?.checkbox) {
-      handleChange(name, e?.target?.checked);
+      handleChange(name, ''+e?.target?.checked);
     } else if (rules?.radio) {
-      handleChange(name, e?.target?.value);
+      handleChange(name, ''+e?.target?.checked);
     } else {
       if (rules?.phone) {
         handlePhoneChange(name, newValue);
