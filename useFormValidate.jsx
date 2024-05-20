@@ -3,6 +3,9 @@ import { useState } from 'react'
  * @typedef {Object} Rule
  * @property {boolean} [required] - Indicates if the field is required.
  * @property {boolean} [money] - Indicates if the field represents a money value.
+ * @property {number} [min] - Minimum allowed value for the field.
+ * @property {number} [max] - Maximum allowed value for the field.
+ * @property {number} [maxLength] - Maximum allowed length for the field.
  * @property {number} [minLength] - Minimum allowed length for the field.
  * @property {string} [isEqual] - Name of the field to compare for equality.
  * @property {boolean} [email] - Indicates if the field must contain a valid email.
@@ -85,6 +88,8 @@ const useFormValidate = (customErrorMessages = {
   is_type_money: 'Debe ser un valor numérico válido para dinero',
   min_length: 'El campo debe tener al menos {minLength} caracteres',
   max_length: 'El campo no debe exceder los {maxLength} caracteres',
+  min: 'El campo debe tener al menos {min}',
+  max: 'El campo no debe exceder los {max}',
   fields_not_match: 'Los campos no coinciden',
   invalid_email: 'Ingrese un correo electrónico válido',
   invalid_phone: 'Ingrese un numero telefónico válido',
@@ -187,7 +192,15 @@ const useFormValidate = (customErrorMessages = {
       setError(name, rules.errorLabel || customErrorMessages.is_type_money)
       return false
     }
+    if (rules?.required && value < rules.min) {
+      setError(name, rules.errorLabel || customErrorMessages.min.replace('{min}', rules.min))
+      return false
+    }
 
+    if (rules?.required && value > rules.max) {
+      setError(name, rules.errorLabel || customErrorMessages.max.replace('{max}', rules.max))
+      return false
+    }
     if (rules?.required && rules?.minLength && value.length < rules.minLength) {
       setError(name, rules.errorLabel || customErrorMessages.min_length.replace('{minLength}', rules.minLength))
       return false
