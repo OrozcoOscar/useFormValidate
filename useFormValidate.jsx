@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 /**
  * @typedef {Object} Rule
  * @property {boolean} [required] - Indicates if the field is required.
@@ -17,7 +17,8 @@ import { useState } from 'react'
  * @property {boolean} [checkbox] - Indicates if the field must be a checkbox.
  * @property {boolean} [radio] - Indicates if the field must be a radio.
  * @property {boolean} [file] - Indicates if the field must be a file.
- */
+ * @property {boolean} [validateOnChange] - Indicates if the field must be validated on change.
+*/
 
 /**
  * @typedef {Object} Field
@@ -99,6 +100,7 @@ const useFormValidate = (customErrorMessages = {
 }) => {
   const [inputs, setInputs] = useState({})
   const [errors, setErrors] = useState({})
+  const [currentInputChange, setCurrentInputChange] = useState()
 
 
   /**
@@ -108,12 +110,18 @@ const useFormValidate = (customErrorMessages = {
    * @param {any} value - Nuevo valor del campo.
    * @param {object} others - Otros valores a actualizar en el campo.
    */
-  const handleChange = (name, value,others={}) => {
-    setInputs((prevInputs) => ({
-      ...prevInputs,
-      [name]: { ...prevInputs[name], value,...others }
-    }))
+  const handleChange = (name, value, others = {}) => {
+
+    setInputs((prevInputs) => {
+      const updatedInputs = {
+        ...prevInputs,
+        [name]: { ...prevInputs[name], value, ...others }
+      };
+      return updatedInputs;
+    });
+    setCurrentInputChange(name)
   }
+
 
   /**
    * Actualiza un campo en el estado de inputs.
@@ -146,7 +154,7 @@ const useFormValidate = (customErrorMessages = {
    * @param {string} name - Nombre del campo.
    * @param {string} message - Mensaje de error.
    */
-  const setError = (name, message) => {
+  const setError = (name, message = '') => {
     setErrors((prevErrors) => ({ ...prevErrors, [name]: message }))
   }
 
@@ -175,7 +183,7 @@ const useFormValidate = (customErrorMessages = {
    * @param {object} rules - Reglas de validación.
    * @returns {boolean} - `true` si la validación es exitosa, `false` en caso contrario.
    */
-  const validate = (name, value, rules) => {
+  const validate = useCallback((name, value, rules) => {
     if (value === undefined || value === null) {
       throw new Error("El campo value es requerido para validar el campo.")
     }
@@ -226,7 +234,7 @@ const useFormValidate = (customErrorMessages = {
       return false
     }
 
-    if (rules?.required && rules?.validate && typeof rules?.validate === 'function') {
+    if (rules?.validate && typeof rules?.validate === 'function') {
       const validationResult = rules.validate(value, inputs)
       if (validationResult !== true) {
         if (typeof validationResult === 'boolean') {
@@ -255,12 +263,12 @@ const useFormValidate = (customErrorMessages = {
       setError(name, rules.errorLabel || customErrorMessages.is_required);
       return false;
     }
-    
+
 
 
     clearError(name)
     return true
-  }
+  }, [inputs, customErrorMessages])
   /**
    * Valida si una url es valida.
    *
@@ -337,7 +345,7 @@ const useFormValidate = (customErrorMessages = {
     }
     const formData = {}
     const isValid = Object.keys(inputs).every((name) => {
-      const { rules, value,values } = inputs[name] || {}
+      const { rules, value, values } = inputs[name] || {}
       formData[name] = value || values || ''
       return validate(name, formData[name], rules)
     })
@@ -396,30 +404,33 @@ const useFormValidate = (customErrorMessages = {
       if (files && files.length > 0) {
         const filePromises = Array.from(files).map((file) => {
           return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          resolve({ dataURL: reader.result, fileName: file.name });
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              resolve({
+                dataURL: reader.result,
+                fileName: file.name,
+                fileSize: file.size,
+              });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
           });
         });
 
         Promise.all(filePromises)
           .then((fileData) => {
-        handleChange(name,"", { values: fileData });
+            handleChange(name, "", { values: fileData });
           })
           .catch((error) => {
-        console.error('Error reading file:', error);
+            console.error('Error reading file:', error);
           });
       } else {
-        handleChange(name,"", { values: [] });
+        handleChange(name, "", { values: [] });
       }
-    }
-    else if (rules?.checkbox) {
-      handleChange(name, ''+e?.target?.checked);
+    } else if (rules?.checkbox) {
+      handleChange(name, '' + e?.target?.checked);
     } else if (rules?.radio) {
-      handleChange(name, ''+e?.target?.checked);
+      handleChange(name, '' + e?.target?.checked);
     } else {
       if (rules?.phone) {
         handlePhoneChange(name, newValue);
@@ -444,7 +455,11 @@ const useFormValidate = (customErrorMessages = {
     if (!(name in inputs) || JSON.stringify(inputs[name]?.rules) !== JSON.stringify(rules)) {
       setInputs((prevInputs) => ({
         ...prevInputs,
-        [name]: { rules, value: rules?.value || defaultValue || '' }
+        [name]: {
+          rules,
+          value: rules?.value || defaultValue || '',
+          ...(rules.file ? { values: [] } : {})
+        }
       }))
     }
     let others = {}
@@ -452,7 +467,7 @@ const useFormValidate = (customErrorMessages = {
       others = {
         ...([rules?.helperText] ? { [rules?.helperText]: getFieldError(name) } : {}),
         value: inputs[name]?.value || '',
-        ...(rules?.file? {value: undefined} : {}),
+        ...(rules?.file ? { value: undefined } : {}),
         error: inputs[name]?.rules?.errorBoolean ? Boolean(errors[name]) : getFieldError(name),
       }
     }
@@ -478,6 +493,14 @@ const useFormValidate = (customErrorMessages = {
    */
   const getFieldError = (name) => errors[name] || ''
 
+
+
+  useEffect(() => {
+    if (inputs[currentInputChange]?.rules.validateOnChange) {
+      validate(currentInputChange, inputs[currentInputChange].value, inputs[currentInputChange].rules);
+      setCurrentInputChange()
+    }
+  }, [currentInputChange]);
   return {
     inputs,
     updateInput,
