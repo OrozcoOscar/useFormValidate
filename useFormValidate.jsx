@@ -176,8 +176,8 @@ const useFormValidate = (customErrorMessages = {
    * @returns {boolean} - `true` si la validación es exitosa, `false` en caso contrario.
    */
   const validate = (name, value, rules) => {
-    if (typeof value !== 'string') {
-      throw new Error("El campo value debe ser un string")
+    if (value === undefined || value === null) {
+      throw new Error("El campo value es requerido para validar el campo.")
     }
     if (rules?.required && rules?.url && !isValidUrl(value)) {
       setError(name, rules.errorLabel || customErrorMessages.invalid_url);
@@ -246,7 +246,7 @@ const useFormValidate = (customErrorMessages = {
       setError(name, rules.errorLabel || customErrorMessages.is_type_radio)
       return false
     }
-    if (rules?.required && rules?.file && value === "") {
+    if (rules?.required && rules?.file && (value === "" || (typeof value === 'object' && value.length === 0))) {
       setError(name, rules.errorLabel || customErrorMessages.is_type_file)
       return false
     }
@@ -337,8 +337,8 @@ const useFormValidate = (customErrorMessages = {
     }
     const formData = {}
     const isValid = Object.keys(inputs).every((name) => {
-      const { rules, value } = inputs[name] || {}
-      formData[name] = value || ''
+      const { rules, value,values } = inputs[name] || {}
+      formData[name] = value || values || ''
       return validate(name, formData[name], rules)
     })
 
