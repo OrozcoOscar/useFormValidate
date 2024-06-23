@@ -135,7 +135,16 @@ El `useFormValidate` hook proporciona varias funcionalidades para facilitar la g
   ```
 - **`radio:`** Para inputs de tipo radio.
   ```jsx
-  getFieldProps('radio_input', { radio: true })
+    <input 
+      type="radio"
+      { ...getFieldProps('radio_input', { radio: true })}
+      value="option1"
+    />
+    <input 
+      type="radio"
+      { ...getFieldProps('radio_input', { radio: true })}
+      value="option2"
+    />
   ```
 - **`file:`** Para inputs de tipo file.
   ```jsx

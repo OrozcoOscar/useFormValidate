@@ -354,8 +354,8 @@ const useFormValidate = (customErrorMessages = {
       //quitar puntos si es tipo money
       Object.keys(formData).forEach((key) => {
         if (inputs[key]?.rules?.money) {
-          formData[key] = formData[key].replace(/\./g, '')  
-        } 
+          formData[key] = formData[key].replace(/\./g, '')
+        }
       })
       onSubmit(formData)
     }
@@ -436,7 +436,7 @@ const useFormValidate = (customErrorMessages = {
     } else if (rules?.checkbox) {
       handleChange(name, '' + e?.target?.checked);
     } else if (rules?.radio) {
-      handleChange(name, '' + e?.target?.checked);
+      handleChange(name, rules.value || e?.target?.value || '' + e.target.checked);
     } else {
       if (rules?.phone) {
         handlePhoneChange(name, newValue);
@@ -458,15 +458,25 @@ const useFormValidate = (customErrorMessages = {
    * @returns {object} - Propiedades del campo.
    */
   const getFieldProps = (name, rules = {}, anotherValue, defaultValue) => {
-    if (!(name in inputs) || JSON.stringify(inputs[name]?.rules) !== JSON.stringify(rules)) {
-      setInputs((prevInputs) => ({
-        ...prevInputs,
-        [name]: {
-          rules,
-          value: rules?.value || defaultValue || '',
-          ...(rules.file ? { values: [] } : {})
+    if (!(name in inputs)) {
+      let isEqualInput = JSON.stringify(inputs[name]?.rules) === JSON.stringify(rules)
+      let changeProps = {}
+      if (rules?.file) {
+        changeProps = {
+          values: []
         }
-      }))
+      }
+    if (!isEqualInput) {
+        setInputs((prevInputs) => ({
+          ...prevInputs,
+          [name]: {
+            rules,
+            value: rules?.value || defaultValue || '',
+            ...changeProps
+          }
+        }))
+      }
+
     }
     let others = {}
     if (inputs[name]) {
