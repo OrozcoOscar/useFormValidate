@@ -259,7 +259,7 @@ const useFormValidate = (customErrorMessages = {
       return false
     }
 
-    if (rules?.required && (!value || value.trim() === '')) {
+    if (rules?.required && (!value || (typeof value === 'string' && value?.trim() === ''))) {
       setError(name, rules.errorLabel || customErrorMessages.is_required);
       return false;
     }
