@@ -354,7 +354,7 @@ const useFormValidate = (customErrorMessages = {
       //quitar puntos si es tipo money
       Object.keys(formData).forEach((key) => {
         if (inputs[key]?.rules?.money) {
-          formData[key] = formData[key].replace(/\./g, '')
+          formData[key] = formData[key].replace(/\./g, '').replace(',', '.')
         }
       })
       onSubmit(formData)
